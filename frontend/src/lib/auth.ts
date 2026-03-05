@@ -1,30 +1,20 @@
-const ADMIN_USERNAME_KEY = "slotnest.admin.username";
-const ADMIN_PASSWORD_KEY = "slotnest.admin.password";
-
 export type AdminCredentials = {
   username: string;
   password: string;
 };
 
+let adminCredentials: AdminCredentials | null = null;
+
 export function setAdminCredentials(credentials: AdminCredentials): void {
-  sessionStorage.setItem(ADMIN_USERNAME_KEY, credentials.username);
-  sessionStorage.setItem(ADMIN_PASSWORD_KEY, credentials.password);
+  adminCredentials = credentials;
 }
 
 export function clearAdminCredentials(): void {
-  sessionStorage.removeItem(ADMIN_USERNAME_KEY);
-  sessionStorage.removeItem(ADMIN_PASSWORD_KEY);
+  adminCredentials = null;
 }
 
 export function getAdminCredentials(): AdminCredentials | null {
-  const username = sessionStorage.getItem(ADMIN_USERNAME_KEY);
-  const password = sessionStorage.getItem(ADMIN_PASSWORD_KEY);
-
-  if (!username || !password) {
-    return null;
-  }
-
-  return { username, password };
+  return adminCredentials;
 }
 
 export function getAdminAuthorizationHeader(): string | null {

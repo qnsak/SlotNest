@@ -74,7 +74,7 @@ async function requestJson<T>(
     if (!authHeader) {
       throw new ApiClientError({
         code: "ADMIN_CREDENTIALS_MISSING",
-        message: "Missing admin credentials in sessionStorage.",
+        message: "Missing admin credentials in memory.",
       });
     }
     headers.set("Authorization", authHeader);
