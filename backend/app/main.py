@@ -61,9 +61,17 @@ def handle_domain_error(request: Request, exc: DomainError) -> JSONResponse:  # 
 def handle_http_exception(request: Request, exc: HTTPException) -> JSONResponse:  # noqa: ARG001
     code = "UNAUTHORIZED" if exc.status_code == status.HTTP_401_UNAUTHORIZED else "HTTP_ERROR"
     message = exc.detail if isinstance(exc.detail, str) else code
-    payload = {"code": code, "message": message}
     if isinstance(exc.detail, dict):
-        payload["details"] = exc.detail
+        detail_code = exc.detail.get("code")
+        detail_message = exc.detail.get("message")
+        code = detail_code if isinstance(detail_code, str) else code
+        message = detail_message if isinstance(detail_message, str) else message
+        payload = {"code": code, "message": message}
+        detail_extra = exc.detail.get("details")
+        if isinstance(detail_extra, dict):
+            payload["details"] = detail_extra
+        return JSONResponse(status_code=exc.status_code, content=payload)
+    payload = {"code": code, "message": message}
     return JSONResponse(status_code=exc.status_code, content=payload)
 
 

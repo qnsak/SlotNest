@@ -164,3 +164,48 @@ def test_booking_get_and_cancel(client: TestClient) -> None:
 
     get_response = client.get(f"/bookings/{booking_reference}")
     assert get_response.json()["status"] == "CANCELED"
+
+
+def test_list_intervals_without_params_returns_only_available_future(client: TestClient) -> None:
+    today = date.today()
+    tomorrow = today + timedelta(days=1)
+    day_after_tomorrow = today + timedelta(days=2)
+
+    today_interval = _create_interval(client, today)
+    tomorrow_interval = _create_interval(client, tomorrow)
+    day_after_tomorrow_interval = _create_interval(client, day_after_tomorrow)
+
+    booking_response = client.post("/bookings", json={"interval_id": day_after_tomorrow_interval})
+    assert booking_response.status_code == 200
+
+    response = client.get("/intervals")
+    assert response.status_code == 200
+    ids = [item["id"] for item in response.json()]
+
+    assert tomorrow_interval in ids
+    assert today_interval not in ids
+    assert day_after_tomorrow_interval not in ids
+
+
+def test_list_intervals_without_params_includes_canceled_slots(client: TestClient) -> None:
+    tomorrow = date.today() + timedelta(days=1)
+    interval_id = _create_interval(client, tomorrow)
+
+    booking_response = client.post("/bookings", json={"interval_id": interval_id})
+    assert booking_response.status_code == 200
+    booking_reference = booking_response.json()["booking_reference"]
+
+    cancel_response = client.post(f"/bookings/{booking_reference}/cancel")
+    assert cancel_response.status_code == 200
+
+    response = client.get("/intervals")
+    assert response.status_code == 200
+    ids = [item["id"] for item in response.json()]
+    assert interval_id in ids
+
+
+def test_list_intervals_rejects_partial_range(client: TestClient) -> None:
+    response = client.get(f"/intervals?from={date.today().isoformat()}")
+    assert response.status_code == 400
+    body = response.json()
+    assert body["code"] == "VALIDATION_ERROR"

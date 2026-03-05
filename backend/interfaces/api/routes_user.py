@@ -2,16 +2,19 @@ from __future__ import annotations
 
 from datetime import date, time
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 
 from application.use_cases.cancel_booking import CancelBookingCommand, cancel_booking
 from application.use_cases.create_booking import CreateBookingCommand, create_booking
 from application.use_cases.get_booking import GetBookingCommand, get_booking
-from application.use_cases.list_intervals import ListIntervalsCommand, list_intervals
+from application.use_cases.list_available_intervals import (
+    ListAvailableIntervalsCommand,
+    list_available_intervals,
+)
 from infrastructure.persistence.sqlalchemy.booking_repo import SqlAlchemyBookingRepository
 from infrastructure.persistence.sqlalchemy.interval_repo import SqlAlchemyIntervalRepository
-from interfaces.api.deps import get_booking_repo, get_interval_repo
+from interfaces.api.deps import get_booking_repo, get_interval_repo, get_today_provider
 
 router = APIRouter(tags=["user"])
 
@@ -35,11 +38,30 @@ class BookingResponse(BaseModel):
 
 @router.get("/intervals", response_model=list[IntervalResponse])
 def list_intervals_endpoint(
-    from_date: date = Query(..., alias="from"),
-    to_date: date = Query(..., alias="to"),
+    from_date: date | None = Query(None, alias="from"),
+    to_date: date | None = Query(None, alias="to"),
     interval_repo: SqlAlchemyIntervalRepository = Depends(get_interval_repo),
+    booking_repo: SqlAlchemyBookingRepository = Depends(get_booking_repo),
+    today_provider=Depends(get_today_provider),
 ) -> list[IntervalResponse]:
-    intervals = list_intervals(interval_repo, ListIntervalsCommand(from_date=from_date, to_date=to_date))
+    if (from_date is None) != (to_date is None):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "code": "VALIDATION_ERROR",
+                "message": "Query parameters 'from' and 'to' must be provided together.",
+            },
+        )
+
+    intervals = list_available_intervals(
+        interval_repo,
+        booking_repo,
+        ListAvailableIntervalsCommand(
+            today=today_provider(),
+            from_date=from_date,
+            to_date=to_date,
+        ),
+    )
     return [
         IntervalResponse(
             id=interval.id,
