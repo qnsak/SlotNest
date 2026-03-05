@@ -9,7 +9,7 @@ export function useIntervals() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchUserIntervals = useCallback(async (from: string, to: string) => {
+  const fetchUserIntervals = useCallback(async (from?: string, to?: string) => {
     setLoading(true);
     setError(null);
     try {

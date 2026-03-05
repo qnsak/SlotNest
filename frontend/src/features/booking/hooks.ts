@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 
-import { toUserMessage } from "../../shared/api/errors";
+import { ApiError, toUserMessage } from "../../shared/api/errors";
 import {
   adminCancelBooking,
   adminListBookings,
@@ -14,23 +14,27 @@ export function useCreateBooking() {
   const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
 
   const submit = useCallback(async (intervalId: number) => {
     setLoading(true);
     setError(null);
+    setErrorCode(null);
     try {
       const data = await createBooking(intervalId);
       setBooking(data);
-      return data;
+      return { booking: data, errorCode: null as string | null };
     } catch (errorValue) {
       setError(toUserMessage(errorValue));
-      return null;
+      const code = errorValue instanceof ApiError ? errorValue.code : null;
+      setErrorCode(code);
+      return { booking: null, errorCode: code };
     } finally {
       setLoading(false);
     }
   }, []);
 
-  return { booking, loading, error, submit };
+  return { booking, loading, error, errorCode, submit };
 }
 
 export function useBookingLookup() {
