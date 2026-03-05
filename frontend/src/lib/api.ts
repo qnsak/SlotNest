@@ -1,4 +1,5 @@
 import { getAdminAuthorizationHeader } from "./auth";
+import { env } from "../config/env";
 import { ApiClientError } from "./errors";
 import type {
   AdminCreateIntervalPayload,
@@ -9,14 +10,12 @@ import type {
   Interval,
 } from "./types";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
 type RequestOptions = {
   adminAuth?: boolean;
 };
 
 function buildUrl(path: string): string {
-  const base = API_BASE_URL?.trim();
+  const base = env.apiBaseUrl;
   if (!base) {
     return path;
   }
