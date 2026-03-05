@@ -14,6 +14,7 @@ class Settings:
     admin_password: str
     admin_session_secret: str
     admin_session_ttl_seconds: int
+    frontend_origins: list[str]
     debug: bool
     auto_migrate: bool
 
@@ -38,6 +39,10 @@ class Settings:
             admin_password=_get_env("ADMIN_PASSWORD", default="changeme"),
             admin_session_secret=_get_env("ADMIN_SESSION_SECRET", default="slotnest-dev-admin-session-secret"),
             admin_session_ttl_seconds=_get_env_int("ADMIN_SESSION_TTL_SECONDS", default=3600),
+            frontend_origins=_get_env_csv(
+                "FRONTEND_ORIGINS",
+                default="http://localhost:5173,http://127.0.0.1:5173",
+            ),
             debug=_get_env_bool("DEBUG", default=False),
             auto_migrate=_get_env_bool("AUTO_MIGRATE", default=False),
         )
@@ -62,6 +67,11 @@ def _get_env_int(key: str, default: int) -> int:
         return int(value)
     except ValueError:
         return default
+
+
+def _get_env_csv(key: str, default: str) -> list[str]:
+    value = _get_env(key, default=default)
+    return [item.strip() for item in value.split(",") if item.strip()]
 
 
 settings = Settings.load()
