@@ -103,6 +103,24 @@ def test_create_interval_out_of_range(client: TestClient) -> None:
     assert response.json()["code"] == "OUT_OF_RANGE"
 
 
+def test_create_interval_invalid_time_range(client: TestClient) -> None:
+    today = date.today()
+
+    _admin_login(client)
+    response = client.post(
+        "/admin/intervals",
+        json={
+            "date": today.isoformat(),
+            "start_time": "10:00",
+            "end_time": "09:00",
+        },
+    )
+    assert response.status_code == 400
+    body = response.json()
+    assert body["code"] == "INVALID_INTERVAL_TIME"
+    assert body["message"] == "start_time must be before end_time"
+
+
 def test_create_booking_and_reject_second_booking(client: TestClient) -> None:
     today = date.today()
     interval_id = _create_interval(client, today)

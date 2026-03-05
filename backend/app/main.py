@@ -49,6 +49,7 @@ def handle_domain_error(request: Request, exc: DomainError) -> JSONResponse:  # 
         "INTERVAL_ALREADY_BOOKED": status.HTTP_409_CONFLICT,
         "INTERVAL_HAS_BOOKINGS": status.HTTP_409_CONFLICT,
         "BOOKING_ALREADY_CANCELED": status.HTTP_409_CONFLICT,
+        "INVALID_INTERVAL_TIME": status.HTTP_400_BAD_REQUEST,
         "INTERVAL_NOT_FOUND": status.HTTP_404_NOT_FOUND,
         "BOOKING_NOT_FOUND": status.HTTP_404_NOT_FOUND,
     }

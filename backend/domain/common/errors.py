@@ -31,3 +31,7 @@ class BookingNotFoundError(DomainError):
 
 class BookingAlreadyCanceledError(DomainError):
     code = "BOOKING_ALREADY_CANCELED"
+
+
+class InvalidIntervalTimeError(DomainError):
+    code = "INVALID_INTERVAL_TIME"

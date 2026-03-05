@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date, time
 
+from domain.common.errors import InvalidIntervalTimeError
 from domain.interval import rules
 from domain.interval.entities import Interval
 from domain.interval.repository import IntervalRepository
@@ -18,7 +19,7 @@ class CreateIntervalCommand:
 
 def create_interval(repo: IntervalRepository, command: CreateIntervalCommand) -> Interval:
     if command.start_time >= command.end_time:
-        raise ValueError("start_time must be before end_time")
+        raise InvalidIntervalTimeError("start_time must be before end_time")
 
     rules.ensure_within_three_months(command.date, command.today)
 
