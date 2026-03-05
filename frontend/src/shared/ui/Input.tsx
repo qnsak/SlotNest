@@ -2,16 +2,11 @@ import type { InputHTMLAttributes } from "react";
 
 type Props = InputHTMLAttributes<HTMLInputElement>;
 
-export function Input(props: Props) {
+export function Input({ className, ...props }: Props) {
   return (
     <input
+      className={`sn-input${className ? ` ${className}` : ""}`}
       {...props}
-      style={{
-        padding: "8px 10px",
-        borderRadius: 8,
-        border: "1px solid #d1d5db",
-        width: "100%",
-      }}
     />
   );
 }

@@ -116,9 +116,11 @@ export function HomePage() {
             alignItems: "center",
             justifyContent: "space-between",
             gap: 12,
-            border: "1px solid #e5e7eb",
-            borderRadius: 8,
+            border: "1px solid #F0CCB8",
+            borderRadius: 12,
             padding: 10,
+            background: "#FFF8F3",
+            boxShadow: "0 4px 16px rgba(217, 81, 44, 0.08)",
           }}
         >
           <span>{interval.start_time} - {interval.end_time}</span>
@@ -162,7 +164,14 @@ export function HomePage() {
           <select
             value={weekIndex}
             onChange={(event) => setWeekIndex(Number(event.target.value))}
-            style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid #d1d5db", minWidth: 220 }}
+            style={{
+              padding: "9px 11px",
+              borderRadius: 12,
+              border: "1px solid #EFC6AE",
+              minWidth: 220,
+              background: "#FFF9F4",
+              color: "#2E1A0E",
+            }}
           >
             {weekOptions.map((week, index) => (
               <option key={week.label} value={index}>
@@ -180,14 +189,23 @@ export function HomePage() {
           <Button
             type="button"
             onClick={() => setViewMode("week")}
-            style={{ background: viewMode === "week" ? "#111827" : "#374151" }}
+            style={{
+              background: viewMode === "week" ? "linear-gradient(135deg, #D9512C 0%, #EB6A43 100%)" : "#F7E6DB",
+              color: viewMode === "week" ? "#fff" : "#8E3C24",
+              borderColor: "#EFC6AE",
+            }}
           >
             一般模式
           </Button>
           <Button
             type="button"
             onClick={() => setViewMode("quick")}
-            style={{ background: viewMode === "quick" ? "#111827" : "#374151" }}
+            style={{
+              background:
+                viewMode === "quick" ? "linear-gradient(135deg, #D9512C 0%, #EB6A43 100%)" : "#F7E6DB",
+              color: viewMode === "quick" ? "#fff" : "#8E3C24",
+              borderColor: "#EFC6AE",
+            }}
           >
             快速查詢
           </Button>
@@ -221,12 +239,16 @@ export function HomePage() {
                 type="button"
                 onClick={() => setSelectedQuickDate(date)}
                 style={{
-                  border: "1px solid #d1d5db",
+                  border: "1px solid #EFC6AE",
                   borderRadius: 999,
                   padding: "6px 10px",
-                  background: selectedQuickDate === date ? "#111827" : "#f9fafb",
-                  color: selectedQuickDate === date ? "#fff" : "#111827",
+                  background: selectedQuickDate === date ? "#D9512C" : "#FFF8F3",
+                  color: selectedQuickDate === date ? "#fff" : "#2E1A0E",
                   cursor: "pointer",
+                  boxShadow:
+                    selectedQuickDate === date
+                      ? "0 8px 18px rgba(217, 81, 44, 0.24)"
+                      : "0 4px 14px rgba(217, 81, 44, 0.1)",
                 }}
               >
                 {date} (週{weekdayLabel(date)}) · {grouped[date]?.length ?? 0} slots
@@ -267,14 +289,14 @@ export function HomePage() {
         }}
         footer={
           <>
-            <Button
-              type="button"
-              disabled={bookingLoading}
-              onClick={() => setConfirmInterval(null)}
-              style={{ background: "#6b7280" }}
-            >
-              取消
-            </Button>
+              <Button
+                type="button"
+                disabled={bookingLoading}
+                onClick={() => setConfirmInterval(null)}
+                variant="ghost"
+              >
+                取消
+              </Button>
             <Button
               type="button"
               disabled={bookingLoading}
@@ -287,13 +309,13 @@ export function HomePage() {
       >
         {confirmInterval ? (
           <div style={{ display: "grid", gap: 8 }}>
-            <p style={{ color: "#374151" }}>請再次確認以下時段：</p>
+            <p style={{ color: "#6A3B23" }}>請再次確認以下時段：</p>
             <div
               style={{
-                border: "1px solid #e5e7eb",
-                borderRadius: 10,
+                border: "1px solid #F0CCB8",
+                borderRadius: 12,
                 padding: "10px 12px",
-                background: "#f9fafb",
+                background: "#FFF6F0",
               }}
             >
               <strong>{confirmInterval.date}</strong>

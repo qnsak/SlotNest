@@ -1,19 +1,21 @@
 import type { ButtonHTMLAttributes, PropsWithChildren } from "react";
 
-type Props = PropsWithChildren<ButtonHTMLAttributes<HTMLButtonElement>>;
+type Props = PropsWithChildren<
+  ButtonHTMLAttributes<HTMLButtonElement> & {
+    variant?: "primary" | "ghost";
+  }
+>;
 
-export function Button({ children, style, disabled, ...props }: Props) {
+export function Button({ children, style, disabled, variant = "primary", className, ...props }: Props) {
+  const classes = `sn-button ${variant === "ghost" ? "sn-button-ghost" : "sn-button-primary"}${
+    className ? ` ${className}` : ""
+  }`;
   return (
     <button
       disabled={disabled}
+      className={classes}
       {...props}
       style={{
-        padding: "8px 12px",
-        borderRadius: 8,
-        border: "1px solid #d1d5db",
-        background: disabled ? "#9ca3af" : "#111827",
-        color: "#fff",
-        cursor: disabled ? "not-allowed" : "pointer",
         ...style,
       }}
     >

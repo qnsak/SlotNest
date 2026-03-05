@@ -1,8 +1,20 @@
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap");
+
 :root {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  --sn-primary: #D9512C;
+  --sn-primary-strong: #C44221;
+  --sn-primary-soft: #EB6A43;
+  --sn-accent: #E8A030;
+  --sn-bg: #FDF4EC;
+  --sn-surface-soft: #F5D9CA;
+  --sn-card: #FFFCFA;
+  --sn-text: #2E1A0E;
+  --sn-border: #EFC6AE;
+  --sn-shadow-soft: 0 8px 40px rgba(217, 81, 44, 0.1);
+  --sn-shadow-hover: 0 14px 34px rgba(217, 81, 44, 0.18);
   line-height: 1.5;
-  color: #1f2937;
-  background-color: #f9fafb;
+  color: var(--sn-text);
+  background-color: var(--sn-bg);
 }
 
 * {
@@ -13,10 +25,91 @@
 
 body {
   min-height: 100vh;
+  font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  color: var(--sn-text);
+  background:
+    radial-gradient(circle at 18% 10%, rgba(232, 160, 48, 0.15) 0%, rgba(232, 160, 48, 0) 42%),
+    radial-gradient(circle at 84% 20%, rgba(217, 81, 44, 0.1) 0%, rgba(217, 81, 44, 0) 40%),
+    radial-gradient(circle at 35% 88%, rgba(232, 160, 48, 0.09) 0%, rgba(232, 160, 48, 0) 45%),
+    var(--sn-bg);
 }
 
 .app {
   display: grid;
   place-items: center;
   min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6, label, strong {
+  font-family: "Nunito", "Noto Sans TC", sans-serif;
+}
+
+h1, h2, h3 {
+  font-weight: 900;
+  letter-spacing: 0.01em;
+}
+
+.sn-card {
+  border: 1px solid var(--sn-border);
+  border-radius: 20px;
+  background: var(--sn-card);
+  box-shadow: var(--sn-shadow-soft);
+  padding: 16px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sn-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--sn-shadow-hover);
+}
+
+.sn-button {
+  padding: 9px 14px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font-family: "Nunito", "Noto Sans TC", sans-serif;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.sn-button:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(217, 81, 44, 0.26);
+}
+
+.sn-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.sn-button-primary {
+  background: linear-gradient(135deg, var(--sn-primary) 0%, var(--sn-primary-soft) 100%);
+  color: #fff;
+  border-color: #D25431;
+  box-shadow: 0 8px 22px rgba(217, 81, 44, 0.25);
+}
+
+.sn-button-ghost {
+  background: #FFF8F3;
+  color: var(--sn-primary);
+  border-color: var(--sn-surface-soft);
+  box-shadow: 0 5px 18px rgba(232, 160, 48, 0.16);
+}
+
+.sn-input {
+  width: 100%;
+  padding: 9px 11px;
+  border-radius: 12px;
+  border: 1px solid var(--sn-border);
+  background: #FFF9F4;
+  color: var(--sn-text);
+  box-shadow: inset 0 1px 2px rgba(46, 26, 14, 0.05);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sn-input:focus {
+  outline: none;
+  border-color: var(--sn-primary);
+  box-shadow: 0 0 0 3px rgba(217, 81, 44, 0.15);
 }

@@ -8,25 +8,27 @@ export function AdminLayout() {
   const { logout } = useAdminAuth();
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f8fafc" }}>
+    <div style={{ minHeight: "100vh" }}>
       <header
         style={{
-          borderBottom: "1px solid #e5e7eb",
-          background: "#0f172a",
-          color: "white",
-          padding: "12px 20px",
+          borderBottom: "1px solid #EFC6AE",
+          background: "linear-gradient(120deg, #2E1A0E 0%, #6A3B23 100%)",
+          color: "#FFF7EF",
+          padding: "14px 20px",
+          boxShadow: "0 10px 26px rgba(46, 26, 14, 0.26)",
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <strong>SlotNest Admin</strong>
+          <strong style={{ fontWeight: 900 }}>SlotNest Admin</strong>
           <nav style={{ display: "flex", gap: 12, alignItems: "center" }}>
-            <Link style={{ color: "#e5e7eb" }} to="/admin/intervals">
+            <Link style={{ color: "#FFF0E4" }} to="/admin/intervals">
               Intervals
             </Link>
-            <Link style={{ color: "#e5e7eb" }} to="/admin/bookings">
+            <Link style={{ color: "#FFF0E4" }} to="/admin/bookings">
               Bookings
             </Link>
             <Button
+              variant="ghost"
               type="button"
               onClick={() => {
                 void (async () => {

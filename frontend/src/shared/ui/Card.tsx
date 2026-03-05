@@ -1,15 +1,10 @@
 import type { PropsWithChildren } from "react";
 
-export function Card({ children }: PropsWithChildren) {
+type Props = PropsWithChildren<{ className?: string }>;
+
+export function Card({ children, className }: Props) {
   return (
-    <section
-      style={{
-        border: "1px solid #e5e7eb",
-        borderRadius: 12,
-        background: "#fff",
-        padding: 16,
-      }}
-    >
+    <section className={`sn-card${className ? ` ${className}` : ""}`}>
       {children}
     </section>
   );

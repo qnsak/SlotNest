@@ -19,7 +19,7 @@ export function Modal({ open, title, onClose, footer, children }: Props) {
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(17, 24, 39, 0.55)",
+        background: "rgba(46, 26, 14, 0.5)",
         display: "grid",
         placeItems: "center",
         zIndex: 1000,
@@ -30,26 +30,26 @@ export function Modal({ open, title, onClose, footer, children }: Props) {
       <div
         style={{
           width: "min(520px, 100%)",
-          background: "#ffffff",
-          borderRadius: 16,
-          border: "1px solid #e5e7eb",
-          boxShadow: "0 22px 40px rgba(17, 24, 39, 0.25)",
+          background: "#FFFCFA",
+          borderRadius: 20,
+          border: "1px solid #F5D9CA",
+          boxShadow: "0 18px 42px rgba(217, 81, 44, 0.22)",
           overflow: "hidden",
         }}
         onClick={(event) => event.stopPropagation()}
       >
-        <div style={{ padding: "16px 18px", borderBottom: "1px solid #f3f4f6" }}>
-          <h3 style={{ margin: 0 }}>{title}</h3>
+        <div style={{ padding: "16px 18px", borderBottom: "1px solid #F8E2D6" }}>
+          <h3 style={{ margin: 0, color: "#2E1A0E", fontWeight: 900 }}>{title}</h3>
         </div>
-        <div style={{ padding: 18 }}>{children}</div>
+        <div style={{ padding: 18, color: "#2E1A0E" }}>{children}</div>
         <div
           style={{
             padding: "14px 18px",
-            borderTop: "1px solid #f3f4f6",
+            borderTop: "1px solid #F8E2D6",
             display: "flex",
             justifyContent: "flex-end",
             gap: 8,
-            background: "#f9fafb",
+            background: "#FFF6F0",
           }}
         >
           {footer}
