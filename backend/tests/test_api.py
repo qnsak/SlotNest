@@ -41,11 +41,14 @@ def client(tmp_path, monkeypatch):
         yield test_client
 
 
-def _admin_auth() -> tuple[str, str]:
-    return ("admin", "secret")
+def _admin_login(client: TestClient) -> None:
+    response = client.post("/admin/login", json={"username": "admin", "password": "secret"})
+    assert response.status_code == 200
+    assert response.json() == {"ok": True}
 
 
 def _create_interval(client: TestClient, target_date: date) -> int:
+    _admin_login(client)
     response = client.post(
         "/admin/intervals",
         json={
@@ -53,7 +56,6 @@ def _create_interval(client: TestClient, target_date: date) -> int:
             "start_time": "09:00",
             "end_time": "10:00",
         },
-        auth=_admin_auth(),
     )
     assert response.status_code == 200
     return response.json()["id"]
@@ -71,6 +73,7 @@ def test_create_interval_and_reject_overlap(client: TestClient) -> None:
     interval_id = _create_interval(client, today)
     assert interval_id > 0
 
+    _admin_login(client)
     response = client.post(
         "/admin/intervals",
         json={
@@ -78,7 +81,6 @@ def test_create_interval_and_reject_overlap(client: TestClient) -> None:
             "start_time": "09:30",
             "end_time": "10:30",
         },
-        auth=_admin_auth(),
     )
     assert response.status_code == 409
     assert response.json()["code"] == "INTERVAL_OVERLAP"
@@ -88,6 +90,7 @@ def test_create_interval_out_of_range(client: TestClient) -> None:
     today = date.today()
     too_late = add_months(today, 3) + timedelta(days=1)
 
+    _admin_login(client)
     response = client.post(
         "/admin/intervals",
         json={
@@ -95,7 +98,6 @@ def test_create_interval_out_of_range(client: TestClient) -> None:
             "start_time": "09:00",
             "end_time": "10:00",
         },
-        auth=_admin_auth(),
     )
     assert response.status_code == 409
     assert response.json()["code"] == "OUT_OF_RANGE"
@@ -121,7 +123,8 @@ def test_delete_interval_blocked_when_active_booking_exists(client: TestClient) 
     interval_id = _create_interval(client, today)
     client.post("/bookings", json={"interval_id": interval_id})
 
-    response = client.delete(f"/admin/intervals/{interval_id}", auth=_admin_auth())
+    _admin_login(client)
+    response = client.delete(f"/admin/intervals/{interval_id}")
     assert response.status_code == 409
     assert response.json()["code"] == "INTERVAL_HAS_BOOKINGS"
 
