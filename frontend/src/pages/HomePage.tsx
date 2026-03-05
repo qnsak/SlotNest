@@ -6,6 +6,7 @@ import { useIntervals } from "../features/intervals/hooks";
 import { Alert } from "../shared/ui/Alert";
 import { Button } from "../shared/ui/Button";
 import { Card } from "../shared/ui/Card";
+import { Modal } from "../shared/ui/Modal";
 import { addDays, addMonths, formatDateInput, minDate, parseDateInput, startOfDay } from "../shared/lib/date";
 import type { Interval } from "../features/intervals/types";
 
@@ -57,6 +58,7 @@ export function HomePage() {
   const [viewMode, setViewMode] = useState<ViewMode>("week");
   const [weekIndex, setWeekIndex] = useState(0);
   const [selectedQuickDate, setSelectedQuickDate] = useState<string | null>(null);
+  const [confirmInterval, setConfirmInterval] = useState<Interval | null>(null);
 
   const weekOptions = useMemo(() => buildWeekOptions(startOfDay(new Date())), []);
   const selectedWeek = weekOptions[weekIndex] ?? null;
@@ -79,30 +81,30 @@ export function HomePage() {
   }, [availableDates]);
 
   const handleBook = async (intervalId: number) => {
-    if (!selectedWeek || bookingLoading) {
+    if (bookingLoading) {
       return;
     }
     const interval = items.find((item) => item.id === intervalId);
     if (!interval) {
       return;
     }
-
-    const confirmed = window.confirm(
-      `是否預約 ${interval.date} ${interval.start_time}-${interval.end_time}？`
-    );
-    if (!confirmed) {
-      return;
-    }
-
-    const result = await submit(intervalId);
-    if (result.booking || result.errorCode === "INTERVAL_ALREADY_BOOKED") {
-      await fetchUserIntervals(selectedWeek.from, selectedWeek.to);
-    }
+    setConfirmInterval(interval);
   };
 
   const canGoPrev = weekIndex > 0;
   const canGoNext = weekIndex < weekOptions.length - 1;
   const quickIntervals = selectedQuickDate ? grouped[selectedQuickDate] ?? [] : [];
+
+  const handleConfirmBooking = async () => {
+    if (!selectedWeek || !confirmInterval || bookingLoading) {
+      return;
+    }
+    const result = await submit(confirmInterval.id);
+    setConfirmInterval(null);
+    if (result.booking || result.errorCode === "INTERVAL_ALREADY_BOOKED") {
+      await fetchUserIntervals(selectedWeek.from, selectedWeek.to);
+    }
+  };
 
   const renderIntervals = (intervals: Interval[]) => (
     <div style={{ display: "grid", gap: 8, marginTop: 10 }}>
@@ -254,6 +256,54 @@ export function HomePage() {
           </div>
         </Card>
       ) : null}
+
+      <Modal
+        open={confirmInterval !== null}
+        title="確認預約"
+        onClose={() => {
+          if (!bookingLoading) {
+            setConfirmInterval(null);
+          }
+        }}
+        footer={
+          <>
+            <Button
+              type="button"
+              disabled={bookingLoading}
+              onClick={() => setConfirmInterval(null)}
+              style={{ background: "#6b7280" }}
+            >
+              取消
+            </Button>
+            <Button
+              type="button"
+              disabled={bookingLoading}
+              onClick={() => void handleConfirmBooking()}
+            >
+              {bookingLoading ? "預約中..." : "確認預約"}
+            </Button>
+          </>
+        }
+      >
+        {confirmInterval ? (
+          <div style={{ display: "grid", gap: 8 }}>
+            <p style={{ color: "#374151" }}>請再次確認以下時段：</p>
+            <div
+              style={{
+                border: "1px solid #e5e7eb",
+                borderRadius: 10,
+                padding: "10px 12px",
+                background: "#f9fafb",
+              }}
+            >
+              <strong>{confirmInterval.date}</strong>
+              <div style={{ marginTop: 4 }}>
+                {confirmInterval.start_time} - {confirmInterval.end_time}
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </Modal>
     </>
   );
 }
