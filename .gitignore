@@ -4,8 +4,10 @@ __pycache__/
 *.pyo
 *.pyd
 *.egg-info/
+.db
 .venv/
 backend/.venv/
+backend/.data/
 
 # Node
 node_modules/
