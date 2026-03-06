@@ -22,6 +22,8 @@ export const messages = {
     lang_en: "English",
 
     user_layout_title: "SlotNest 預約",
+    brand_name: "SlotNest",
+    brand_booking: "預約",
     admin_layout_title: "SlotNest 管理後台",
 
     home_title: "選擇預約時段",
@@ -104,6 +106,8 @@ export const messages = {
     lang_en: "English",
 
     user_layout_title: "SlotNest Booking",
+    brand_name: "SlotNest",
+    brand_booking: "Booking",
     admin_layout_title: "SlotNest Admin",
 
     home_title: "Select Booking Slot",
