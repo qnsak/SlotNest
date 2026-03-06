@@ -5,6 +5,7 @@ import { BookingCard } from "../features/booking/ui/BookingCard";
 import { getIntervals } from "../features/intervals/api";
 import { useIntervals } from "../features/intervals/hooks";
 import { toUserMessage } from "../shared/api/errors";
+import { useI18n } from "../shared/i18n/provider";
 import { Alert } from "../shared/ui/Alert";
 import { Button } from "../shared/ui/Button";
 import { Card } from "../shared/ui/Card";
@@ -20,9 +21,10 @@ type WeekOption = {
   label: string;
 };
 
-function weekdayLabel(value: string): string {
-  const weekday = parseDateInput(value).toLocaleDateString("zh-TW", { weekday: "short" });
-  return weekday.replace("週", "");
+function weekdayLabel(value: string, locale: "zh-TW" | "en"): string {
+  const formatLocale = locale === "zh-TW" ? "zh-TW" : "en-US";
+  const weekday = parseDateInput(value).toLocaleDateString(formatLocale, { weekday: "short" });
+  return locale === "zh-TW" ? weekday.replace("週", "") : weekday;
 }
 
 function buildWeekOptions(today: Date): WeekOption[] {
@@ -54,18 +56,20 @@ function groupByDate(intervals: Interval[]): Record<string, Interval[]> {
   }, {});
 }
 
-function weekSummaryLabel(week: WeekOption | null): string {
+function weekSummaryLabel(week: WeekOption | null, locale: "zh-TW" | "en"): string {
   if (!week) {
     return "-";
   }
   const start = parseDateInput(week.from);
   const end = parseDateInput(week.to);
-  const startLabel = start.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
-  const endLabel = end.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const formatLocale = locale === "zh-TW" ? "zh-TW" : "en-US";
+  const startLabel = start.toLocaleDateString(formatLocale, { year: "numeric", month: "short", day: "numeric" });
+  const endLabel = end.toLocaleDateString(formatLocale, { month: "short", day: "numeric" });
   return `${startLabel} — ${endLabel}`;
 }
 
 export function HomePage() {
+  const { t, locale } = useI18n();
   const { items, loading, error, fetchUserIntervals } = useIntervals();
   const { booking, loading: bookingLoading, error: bookingError, submit } = useCreateBooking();
   const [viewMode, setViewMode] = useState<ViewMode>("week");
@@ -168,27 +172,30 @@ export function HomePage() {
 
   useEffect(() => {
     if (error && viewMode === "week") {
-      setMessagePopup({ title: "系統提示", message: error });
+      setMessagePopup({ title: t("home_system_message_title"), message: error });
     }
-  }, [error, viewMode]);
+  }, [error, t, viewMode]);
 
   useEffect(() => {
     if (quickError && viewMode === "quick") {
-      setMessagePopup({ title: "系統提示", message: quickError });
+      setMessagePopup({ title: t("home_system_message_title"), message: quickError });
     }
-  }, [quickError, viewMode]);
+  }, [quickError, t, viewMode]);
 
   useEffect(() => {
     if (bookingError) {
-      setMessagePopup({ title: "預約失敗", message: bookingError });
+      setMessagePopup({ title: t("home_booking_failed_title"), message: bookingError });
     }
-  }, [bookingError]);
+  }, [bookingError, t]);
 
   useEffect(() => {
     if (booking) {
-      setMessagePopup({ title: "預約成功", message: "預約成功，請保存 booking reference。" });
+      setMessagePopup({
+        title: t("home_booking_success_title"),
+        message: t("home_booking_success_message"),
+      });
     }
-  }, [booking]);
+  }, [booking, t]);
 
   const handleConfirmBooking = async () => {
     if (!selectedWeek || !confirmInterval || bookingLoading) {
@@ -218,14 +225,14 @@ export function HomePage() {
         >
           <div style={{ display: "grid", gap: 2 }}>
             <span className="text-main">{interval.start_time} - {interval.end_time}</span>
-            <span className="text-sub">Available</span>
+            <span className="text-sub">{t("home_interval_available")}</span>
           </div>
           <Button
             type="button"
             disabled={bookingLoading}
             onClick={() => void handleBook(interval.id)}
           >
-            {bookingLoading ? "預約中..." : "預約"}
+            {bookingLoading ? t("home_booking_in_progress") : t("common_book")}
           </Button>
         </div>
       ))}
@@ -246,9 +253,9 @@ export function HomePage() {
   return (
     <>
       <Card className="booking-toolbar">
-        <h2 className="page-title">選擇預約時段</h2>
+        <h2 className="page-title">{t("home_title")}</h2>
         <p className="text-sub" style={{ marginTop: 10, lineHeight: 1.7 }}>
-          請選擇後台開放的可預約時段。
+          {t("home_subtitle")}
         </p>
 
         <div className="mode-sections" style={{ marginTop: 18 }}>
@@ -262,7 +269,7 @@ export function HomePage() {
             }}
           >
             <p className="text-sub" style={{ marginBottom: 8 }}>
-              模式切換
+              {t("home_mode_switch")}
             </p>
             <div className="mode-switch-row">
               <Button
@@ -274,7 +281,7 @@ export function HomePage() {
                   borderColor: "var(--sn-border)",
                 }}
               >
-                一般模式
+                {t("home_mode_week")}
               </Button>
               <Button
                 type="button"
@@ -285,7 +292,7 @@ export function HomePage() {
                   borderColor: "var(--sn-border)",
                 }}
               >
-                快速查詢
+                {t("home_mode_quick")}
               </Button>
             </div>
           </div>
@@ -303,7 +310,7 @@ export function HomePage() {
             >
               <>
                 <p className="text-sub" style={{ marginBottom: 12 }}>
-                  一般模式專屬
+                  {t("home_week_only")}
                 </p>
                 <div className="week-nav-row">
                   <Button
@@ -312,11 +319,11 @@ export function HomePage() {
                     onClick={() => setWeekIndex((prev) => Math.max(0, prev - 1))}
                     style={{ minWidth: 44, padding: "8px 10px" }}
                   >
-                    ←
+                    {t("home_week_prev")}
                   </Button>
                   <div style={{ flex: 1, textAlign: "center" }}>
                     <div className="week-range-title" style={{ fontWeight: 600, lineHeight: 1.25, color: "var(--sn-text)" }}>
-                      {weekSummaryLabel(selectedWeek)}
+                      {weekSummaryLabel(selectedWeek, locale)}
                     </div>
                   </div>
                   <Button
@@ -325,7 +332,7 @@ export function HomePage() {
                     onClick={() => setWeekIndex((prev) => Math.min(weekOptions.length - 1, prev + 1))}
                     style={{ minWidth: 44, padding: "8px 10px" }}
                   >
-                    →
+                    {t("home_week_next")}
                   </Button>
                 </div>
               </>
@@ -335,19 +342,19 @@ export function HomePage() {
       </Card>
 
       {viewMode === "week" && !loading && !error && items.length === 0 ? (
-        <Alert kind="info">此週目前無可預約時段。</Alert>
+        <Alert kind="info">{t("home_week_empty")}</Alert>
       ) : null}
       {viewMode === "quick" && !quickLoading && !quickError && quickItems.length === 0 ? (
-        <Alert kind="info">目前沒有可預約時段。</Alert>
+        <Alert kind="info">{t("home_quick_empty")}</Alert>
       ) : null}
-      {viewMode === "quick" && quickLoading ? <Alert kind="info">載入可預約時段中...</Alert> : null}
+      {viewMode === "quick" && quickLoading ? <Alert kind="info">{t("home_quick_loading")}</Alert> : null}
 
       {viewMode === "week" && !loading && !error && items.length > 0 ? (
         <div style={{ display: "grid", gap: 14 }}>
           {availableDates.map((date) => (
             <Card key={date}>
               <h3 className="section-title" style={{ margin: 0 }}>
-                {date} (週{weekdayLabel(date)})
+                {date} ({weekdayLabel(date, locale)})
               </h3>
               {renderIntervals(grouped[date] ?? [])}
             </Card>
@@ -357,10 +364,14 @@ export function HomePage() {
       {viewMode === "quick" && !quickLoading && !quickError && quickItems.length > 0 ? (
         <Card>
           <h3 className="section-title" style={{ marginTop: 0, marginBottom: 8 }}>
-            可預約時段
+            {t("home_quick_slots")}
           </h3>
           <p className="text-sub">
-            共 {quickItems.length} 筆，頁面 {quickCurrentPage} / {quickTotalPages}
+            {t("home_quick_summary", {
+              total: quickItems.length,
+              page: quickCurrentPage,
+              pages: quickTotalPages,
+            })}
           </p>
           {renderIntervals(quickPageItems)}
           <div className="quick-pagination" style={{ marginTop: 16 }}>
@@ -370,10 +381,10 @@ export function HomePage() {
               disabled={quickCurrentPage <= 1}
               onClick={() => setQuickPage((prev) => Math.max(1, prev - 1))}
             >
-              上一頁
+              {t("common_prev_page")}
             </Button>
             <span className="text-sub">
-              第 {quickCurrentPage} 頁 / 共 {quickTotalPages} 頁
+              {t("home_quick_pagination", { page: quickCurrentPage, pages: quickTotalPages })}
             </span>
             <Button
               type="button"
@@ -381,7 +392,7 @@ export function HomePage() {
               disabled={quickCurrentPage >= quickTotalPages}
               onClick={() => setQuickPage((prev) => Math.min(quickTotalPages, prev + 1))}
             >
-              下一頁
+              {t("common_next_page")}
             </Button>
           </div>
         </Card>
@@ -392,7 +403,7 @@ export function HomePage() {
           <BookingCard booking={booking} />
           <div style={{ marginTop: 10 }}>
             <Button type="button" onClick={() => void handleCopyReference()}>
-              複製 booking reference
+              {t("home_copy_reference")}
             </Button>
           </div>
         </Card>
@@ -400,7 +411,7 @@ export function HomePage() {
 
       <Modal
         open={confirmInterval !== null}
-        title="確認預約"
+        title={t("home_confirm_booking_title")}
         onClose={() => {
           if (!bookingLoading) {
             setConfirmInterval(null);
@@ -414,21 +425,21 @@ export function HomePage() {
                 onClick={() => setConfirmInterval(null)}
                 variant="ghost"
               >
-                取消
+                {t("common_cancel")}
               </Button>
             <Button
               type="button"
               disabled={bookingLoading}
               onClick={() => void handleConfirmBooking()}
             >
-              {bookingLoading ? "預約中..." : "確認預約"}
+              {bookingLoading ? t("home_booking_in_progress") : t("home_confirm_booking_action")}
             </Button>
           </>
         }
       >
         {confirmInterval ? (
           <div style={{ display: "grid", gap: 8 }}>
-            <p style={{ color: "var(--sn-text)" }}>請再次確認以下時段：</p>
+            <p style={{ color: "var(--sn-text)" }}>{t("home_confirm_booking_desc")}</p>
             <div
               style={{
                 border: "1px solid var(--sn-border)",
@@ -452,7 +463,7 @@ export function HomePage() {
         onClose={() => setMessagePopup(null)}
         footer={
           <Button type="button" onClick={() => setMessagePopup(null)}>
-            確定
+            {t("common_confirm")}
           </Button>
         }
       >

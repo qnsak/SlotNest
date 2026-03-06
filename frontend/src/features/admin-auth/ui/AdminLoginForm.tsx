@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { useI18n } from "../../../shared/i18n/provider";
 import { Button } from "../../../shared/ui/Button";
 import { Input } from "../../../shared/ui/Input";
 
@@ -9,6 +10,7 @@ type Props = {
 };
 
 export function AdminLoginForm({ loading, onSubmit }: Props) {
+  const { t } = useI18n();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -21,11 +23,11 @@ export function AdminLoginForm({ loading, onSubmit }: Props) {
       style={{ display: "grid", gap: 8 }}
     >
       <label>
-        Username
+        {t("admin_login_username")}
         <Input value={username} onChange={(event) => setUsername(event.target.value)} />
       </label>
       <label>
-        Password
+        {t("admin_login_password")}
         <Input
           type="password"
           value={password}
@@ -33,7 +35,7 @@ export function AdminLoginForm({ loading, onSubmit }: Props) {
         />
       </label>
       <Button type="submit" disabled={loading}>
-        {loading ? "Signing in..." : "Sign In"}
+        {loading ? t("admin_login_loading") : t("admin_login_action")}
       </Button>
     </form>
   );

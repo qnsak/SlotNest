@@ -1,6 +1,7 @@
 import type { ErrorInfo, PropsWithChildren } from "react";
 import { Component } from "react";
 
+import { I18nProvider } from "../shared/i18n/provider";
 import { Alert } from "../shared/ui/Alert";
 
 class ErrorBoundary extends Component<PropsWithChildren, { hasError: boolean }> {
@@ -27,5 +28,9 @@ class ErrorBoundary extends Component<PropsWithChildren, { hasError: boolean }> 
 }
 
 export function AppProviders({ children }: PropsWithChildren) {
-  return <ErrorBoundary>{children}</ErrorBoundary>;
+  return (
+    <I18nProvider>
+      <ErrorBoundary>{children}</ErrorBoundary>
+    </I18nProvider>
+  );
 }

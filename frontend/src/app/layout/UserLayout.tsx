@@ -1,6 +1,10 @@
 import { Link, Outlet } from "react-router-dom";
+import { useI18n } from "../../shared/i18n/provider";
+import { LanguageSwitcher } from "../../shared/i18n/LanguageSwitcher";
 
 export function UserLayout() {
+  const { t } = useI18n();
+
   return (
     <div style={{ minHeight: "100vh" }}>
       <header className="sn-header"
@@ -11,14 +15,15 @@ export function UserLayout() {
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", height: "100%" }}>
-          <strong style={{ fontWeight: 600 }}>SlotNest Booking</strong>
-          <nav style={{ display: "flex", gap: 12 }}>
+          <strong style={{ fontWeight: 600 }}>{t("user_layout_title")}</strong>
+          <nav style={{ display: "flex", gap: 12, alignItems: "center" }}>
             <Link style={{ color: "var(--sn-text-sub)" }} to="/">
-              Home
+              {t("common_home")}
             </Link>
             <Link style={{ color: "var(--sn-text-sub)" }} to="/booking">
-              Booking Lookup
+              {t("common_booking_lookup")}
             </Link>
+            <LanguageSwitcher />
           </nav>
         </div>
       </header>

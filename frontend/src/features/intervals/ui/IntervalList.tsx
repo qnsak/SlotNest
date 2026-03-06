@@ -1,4 +1,5 @@
 import type { Interval } from "../types";
+import { useI18n } from "../../../shared/i18n/provider";
 import { Button } from "../../../shared/ui/Button";
 import { Card } from "../../../shared/ui/Card";
 import { formatIntervalLabel } from "../../../shared/lib/format";
@@ -10,8 +11,10 @@ type Props = {
 };
 
 export function IntervalList({ intervals, onBook, onDelete }: Props) {
+  const { t } = useI18n();
+
   if (intervals.length === 0) {
-    return <Card>No intervals found.</Card>;
+    return <Card>{t("interval_list_empty")}</Card>;
   }
 
   return (
@@ -23,12 +26,12 @@ export function IntervalList({ intervals, onBook, onDelete }: Props) {
             <div style={{ display: "flex", gap: 8 }}>
               {onBook ? (
                 <Button type="button" onClick={() => onBook(interval.id)}>
-                  Book
+                  {t("interval_list_book")}
                 </Button>
               ) : null}
               {onDelete ? (
                 <Button type="button" onClick={() => onDelete(interval.id)}>
-                  Delete
+                  {t("interval_list_delete")}
                 </Button>
               ) : null}
             </div>
