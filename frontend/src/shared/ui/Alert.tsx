@@ -7,9 +7,13 @@ type Props = PropsWithChildren<{
 }>;
 
 const palette: Record<AlertKind, { bg: string; color: string; border: string }> = {
-  error: { bg: "#FFF1EC", color: "#8E2D18", border: "#EBA18C" },
-  info: { bg: "#FFF8EE", color: "#7A4A12", border: "#F2C379" },
-  success: { bg: "#FDF3E8", color: "#6E451A", border: "#E7B987" },
+  error: { bg: "var(--sn-error-bg)", color: "var(--sn-error-text)", border: "var(--sn-error-border)" },
+  info: { bg: "var(--sn-info-bg)", color: "var(--sn-info-text)", border: "var(--sn-info-border)" },
+  success: {
+    bg: "var(--sn-success-bg)",
+    color: "var(--sn-success-text)",
+    border: "var(--sn-success-border)",
+  },
 };
 
 export function Alert({ kind = "info", children }: Props) {
@@ -24,7 +28,7 @@ export function Alert({ kind = "info", children }: Props) {
         color: colors.color,
         borderRadius: 12,
         padding: "10px 14px",
-        boxShadow: "0 8px 28px rgba(217, 81, 44, 0.08)",
+        boxShadow: "0 4px 12px rgba(50, 48, 46, 0.08)",
       }}
     >
       {children}

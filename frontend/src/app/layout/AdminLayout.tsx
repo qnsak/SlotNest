@@ -11,20 +11,20 @@ export function AdminLayout() {
     <div style={{ minHeight: "100vh" }}>
       <header
         style={{
-          borderBottom: "1px solid #EFC6AE",
-          background: "linear-gradient(120deg, #2E1A0E 0%, #6A3B23 100%)",
-          color: "#FFF7EF",
-          padding: "14px 20px",
-          boxShadow: "0 10px 26px rgba(46, 26, 14, 0.26)",
+          borderBottom: "1px solid var(--sn-border)",
+          background: "var(--sn-surface)",
+          color: "var(--sn-text)",
+          height: 64,
+          padding: "0 24px",
         }}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <strong style={{ fontWeight: 900 }}>SlotNest Admin</strong>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", height: "100%" }}>
+          <strong style={{ fontWeight: 600 }}>SlotNest Admin</strong>
           <nav style={{ display: "flex", gap: 12, alignItems: "center" }}>
-            <Link style={{ color: "#FFF0E4" }} to="/admin/intervals">
+            <Link style={{ color: "var(--sn-text-sub)" }} to="/admin/intervals">
               Intervals
             </Link>
-            <Link style={{ color: "#FFF0E4" }} to="/admin/bookings">
+            <Link style={{ color: "var(--sn-text-sub)" }} to="/admin/bookings">
               Bookings
             </Link>
             <Button
@@ -42,7 +42,7 @@ export function AdminLayout() {
           </nav>
         </div>
       </header>
-      <main style={{ maxWidth: 920, margin: "0 auto", padding: 20, display: "grid", gap: 12 }}>
+      <main style={{ maxWidth: 980, margin: "0 auto", padding: 32, display: "grid", gap: 20 }}>
         <Outlet />
       </main>
     </div>

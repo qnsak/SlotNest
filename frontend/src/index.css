@@ -1,17 +1,31 @@
-@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&display=swap");
 
 :root {
-  --sn-primary: #D9512C;
-  --sn-primary-strong: #C44221;
-  --sn-primary-soft: #EB6A43;
-  --sn-accent: #E8A030;
-  --sn-bg: #FDF4EC;
-  --sn-surface-soft: #F5D9CA;
-  --sn-card: #FFFCFA;
-  --sn-text: #2E1A0E;
-  --sn-border: #EFC6AE;
-  --sn-shadow-soft: 0 8px 40px rgba(217, 81, 44, 0.1);
-  --sn-shadow-hover: 0 14px 34px rgba(217, 81, 44, 0.18);
+  --sn-bg: #F8F6F4;
+  --sn-surface: #FFFFFF;
+  --sn-card: #FFFFFF;
+  --sn-border: #E9E4DE;
+  --sn-primary: #C58A95;
+  --sn-primary-hover: #B77985;
+  --sn-primary-soft: #F6ECEE;
+  --sn-action: #E89A5A;
+  --sn-action-hover: #D9853F;
+  --sn-action-focus: rgba(232, 154, 90, 0.22);
+  --sn-text: #32302E;
+  --sn-text-body: #4B4743;
+  --sn-text-sub: #7B7773;
+  --sn-hover: #FFF8F4;
+  --sn-surface-soft: #F3EEE8;
+  --sn-shadow-soft: 0 6px 18px rgba(50, 48, 46, 0.07);
+  --sn-success-bg: #F5F8F2;
+  --sn-success-text: #5F7357;
+  --sn-success-border: #DCE7D5;
+  --sn-error-bg: #FFF2F3;
+  --sn-error-text: #8D5A62;
+  --sn-error-border: #F0D7DC;
+  --sn-info-bg: #FAF8F6;
+  --sn-info-text: #7B7773;
+  --sn-info-border: #ECE6E0;
   line-height: 1.5;
   color: var(--sn-text);
   background-color: var(--sn-bg);
@@ -25,13 +39,9 @@
 
 body {
   min-height: 100vh;
-  font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  font-family: "Manrope", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
   color: var(--sn-text);
-  background:
-    radial-gradient(circle at 18% 10%, rgba(232, 160, 48, 0.15) 0%, rgba(232, 160, 48, 0) 42%),
-    radial-gradient(circle at 84% 20%, rgba(217, 81, 44, 0.1) 0%, rgba(217, 81, 44, 0) 40%),
-    radial-gradient(circle at 35% 88%, rgba(232, 160, 48, 0.09) 0%, rgba(232, 160, 48, 0) 45%),
-    var(--sn-bg);
+  background: var(--sn-bg);
 }
 
 .app {
@@ -40,42 +50,55 @@ body {
   min-height: 100vh;
 }
 
-h1, h2, h3, h4, h5, h6, label, strong {
-  font-family: "Nunito", "Noto Sans TC", sans-serif;
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Manrope", "Noto Sans TC", sans-serif;
 }
 
 h1, h2, h3 {
-  font-weight: 900;
+  font-weight: 600;
   letter-spacing: 0.01em;
+}
+
+label, strong {
+  font-family: "Manrope", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+}
+
+@keyframes sn-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .sn-card {
   border: 1px solid var(--sn-border);
-  border-radius: 20px;
+  border-radius: 12px;
   background: var(--sn-card);
   box-shadow: var(--sn-shadow-soft);
   padding: 16px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+  animation: sn-fade-in 0.28s ease;
 }
 
 .sn-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--sn-shadow-hover);
+  background: var(--sn-hover);
+  border-color: var(--sn-primary);
 }
 
 .sn-button {
-  padding: 9px 14px;
-  border-radius: 12px;
+  padding: 8px 16px;
+  border-radius: 4px;
   border: 1px solid transparent;
-  font-family: "Nunito", "Noto Sans TC", sans-serif;
-  font-weight: 800;
+  font-family: "Manrope", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  font-weight: 500;
   letter-spacing: 0.01em;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
 }
 
 .sn-button:not(:disabled):hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 28px rgba(217, 81, 44, 0.26);
+  box-shadow: 0 4px 10px rgba(50, 48, 46, 0.1);
 }
 
 .sn-button:disabled {
@@ -84,32 +107,75 @@ h1, h2, h3 {
 }
 
 .sn-button-primary {
-  background: linear-gradient(135deg, var(--sn-primary) 0%, var(--sn-primary-soft) 100%);
+  background: var(--sn-action);
   color: #fff;
-  border-color: #D25431;
-  box-shadow: 0 8px 22px rgba(217, 81, 44, 0.25);
+  border-color: var(--sn-action);
+}
+
+.sn-button-primary:hover:not(:disabled) {
+  background: var(--sn-action-hover);
 }
 
 .sn-button-ghost {
-  background: #FFF8F3;
-  color: var(--sn-primary);
-  border-color: var(--sn-surface-soft);
-  box-shadow: 0 5px 18px rgba(232, 160, 48, 0.16);
+  background: var(--sn-surface-soft);
+  color: var(--sn-text-sub);
+  border-color: var(--sn-border);
+}
+
+.sn-button-ghost:hover:not(:disabled) {
+  background: #EDE6DE;
 }
 
 .sn-input {
   width: 100%;
-  padding: 9px 11px;
-  border-radius: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
   border: 1px solid var(--sn-border);
-  background: #FFF9F4;
+  background: var(--sn-surface);
   color: var(--sn-text);
-  box-shadow: inset 0 1px 2px rgba(46, 26, 14, 0.05);
+  box-shadow: inset 0 1px 2px rgba(50, 48, 46, 0.08);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .sn-input:focus {
   outline: none;
+  border-color: var(--sn-action);
+  box-shadow: 0 0 0 3px var(--sn-action-focus);
+}
+
+.page-title {
+  font-size: 24px;
+}
+
+.section-title {
+  font-size: 18px;
+}
+
+.text-main {
+  font-size: 16px;
+}
+
+.text-sub {
+  font-size: 14px;
+  color: var(--sn-text-sub);
+}
+
+.booking-toolbar {
+  background: var(--sn-surface);
+  border: 1px solid var(--sn-border);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.slot-card {
+  background: var(--sn-surface);
+  border: 1px solid var(--sn-border);
+  border-radius: 12px;
+  padding: 16px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.slot-card:hover {
+  background: var(--sn-hover);
   border-color: var(--sn-primary);
-  box-shadow: 0 0 0 3px rgba(217, 81, 44, 0.15);
 }

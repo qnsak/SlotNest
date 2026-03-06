@@ -19,7 +19,7 @@ export function Modal({ open, title, onClose, footer, children }: Props) {
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(46, 26, 14, 0.5)",
+        background: "rgba(50, 48, 46, 0.22)",
         display: "grid",
         placeItems: "center",
         zIndex: 1000,
@@ -30,26 +30,26 @@ export function Modal({ open, title, onClose, footer, children }: Props) {
       <div
         style={{
           width: "min(520px, 100%)",
-          background: "#FFFCFA",
-          borderRadius: 20,
-          border: "1px solid #F5D9CA",
-          boxShadow: "0 18px 42px rgba(217, 81, 44, 0.22)",
+          background: "var(--sn-surface)",
+          borderRadius: 12,
+          border: "1px solid var(--sn-border)",
+          boxShadow: "0 12px 26px rgba(50, 48, 46, 0.14)",
           overflow: "hidden",
         }}
         onClick={(event) => event.stopPropagation()}
       >
-        <div style={{ padding: "16px 18px", borderBottom: "1px solid #F8E2D6" }}>
-          <h3 style={{ margin: 0, color: "#2E1A0E", fontWeight: 900 }}>{title}</h3>
+        <div style={{ padding: "16px 18px", borderBottom: "1px solid var(--sn-border)" }}>
+          <h3 style={{ margin: 0, color: "var(--sn-text)", fontWeight: 600 }}>{title}</h3>
         </div>
-        <div style={{ padding: 18, color: "#2E1A0E" }}>{children}</div>
+        <div style={{ padding: 18, color: "var(--sn-text)" }}>{children}</div>
         <div
           style={{
             padding: "14px 18px",
-            borderTop: "1px solid #F8E2D6",
+            borderTop: "1px solid var(--sn-border)",
             display: "flex",
             justifyContent: "flex-end",
             gap: 8,
-            background: "#FFF6F0",
+            background: "var(--sn-bg)",
           }}
         >
           {footer}

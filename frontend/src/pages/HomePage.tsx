@@ -52,6 +52,15 @@ function groupByDate(intervals: Interval[]): Record<string, Interval[]> {
   }, {});
 }
 
+const earthSelectStyle = {
+  padding: "8px 12px",
+  borderRadius: 12,
+  border: "1px solid var(--sn-border)",
+  minWidth: 220,
+  background: "var(--sn-surface)",
+  color: "var(--sn-text)",
+};
+
 export function HomePage() {
   const { items, loading, error, fetchUserIntervals } = useIntervals();
   const { booking, loading: bookingLoading, error: bookingError, submit } = useCreateBooking();
@@ -59,6 +68,7 @@ export function HomePage() {
   const [weekIndex, setWeekIndex] = useState(0);
   const [selectedQuickDate, setSelectedQuickDate] = useState<string | null>(null);
   const [confirmInterval, setConfirmInterval] = useState<Interval | null>(null);
+  const [messagePopup, setMessagePopup] = useState<{ title: string; message: string } | null>(null);
 
   const weekOptions = useMemo(() => buildWeekOptions(startOfDay(new Date())), []);
   const selectedWeek = weekOptions[weekIndex] ?? null;
@@ -95,6 +105,24 @@ export function HomePage() {
   const canGoNext = weekIndex < weekOptions.length - 1;
   const quickIntervals = selectedQuickDate ? grouped[selectedQuickDate] ?? [] : [];
 
+  useEffect(() => {
+    if (error) {
+      setMessagePopup({ title: "系統提示", message: error });
+    }
+  }, [error]);
+
+  useEffect(() => {
+    if (bookingError) {
+      setMessagePopup({ title: "預約失敗", message: bookingError });
+    }
+  }, [bookingError]);
+
+  useEffect(() => {
+    if (booking) {
+      setMessagePopup({ title: "預約成功", message: "預約成功，請保存 booking reference。" });
+    }
+  }, [booking]);
+
   const handleConfirmBooking = async () => {
     if (!selectedWeek || !confirmInterval || bookingLoading) {
       return;
@@ -107,23 +135,24 @@ export function HomePage() {
   };
 
   const renderIntervals = (intervals: Interval[]) => (
-    <div style={{ display: "grid", gap: 8, marginTop: 10 }}>
+    <div style={{ display: "grid", gap: 12, marginTop: 14 }}>
       {intervals.map((interval) => (
         <div
           key={interval.id}
+          className="slot-card"
           style={{
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            gap: 12,
-            border: "1px solid #F0CCB8",
-            borderRadius: 12,
-            padding: 10,
-            background: "#FFF8F3",
-            boxShadow: "0 4px 16px rgba(217, 81, 44, 0.08)",
+            gap: 16,
+            padding: 16,
+            animation: "sn-fade-in 0.24s ease",
           }}
         >
-          <span>{interval.start_time} - {interval.end_time}</span>
+          <div style={{ display: "grid", gap: 2 }}>
+            <span className="text-main">{interval.start_time} - {interval.end_time}</span>
+            <span className="text-sub">Available</span>
+          </div>
           <Button
             type="button"
             disabled={bookingLoading}
@@ -149,11 +178,13 @@ export function HomePage() {
 
   return (
     <>
-      <Card>
-        <h2>選擇預約時段</h2>
-        <p style={{ marginTop: 8 }}>請選擇後台開放的可預約時段。</p>
+      <Card className="booking-toolbar">
+        <h2 className="page-title">選擇預約時段</h2>
+        <p className="text-sub" style={{ marginTop: 10, lineHeight: 1.7 }}>
+          請選擇後台開放的可預約時段。
+        </p>
 
-        <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+        <div style={{ marginTop: 18, display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
           <Button
             type="button"
             disabled={!canGoPrev}
@@ -164,14 +195,7 @@ export function HomePage() {
           <select
             value={weekIndex}
             onChange={(event) => setWeekIndex(Number(event.target.value))}
-            style={{
-              padding: "9px 11px",
-              borderRadius: 12,
-              border: "1px solid #EFC6AE",
-              minWidth: 220,
-              background: "#FFF9F4",
-              color: "#2E1A0E",
-            }}
+            style={earthSelectStyle}
           >
             {weekOptions.map((week, index) => (
               <option key={week.label} value={index}>
@@ -190,9 +214,10 @@ export function HomePage() {
             type="button"
             onClick={() => setViewMode("week")}
             style={{
-              background: viewMode === "week" ? "linear-gradient(135deg, #D9512C 0%, #EB6A43 100%)" : "#F7E6DB",
-              color: viewMode === "week" ? "#fff" : "#8E3C24",
-              borderColor: "#EFC6AE",
+              background:
+                viewMode === "week" ? "var(--sn-primary)" : "var(--sn-surface-soft)",
+              color: viewMode === "week" ? "#fff" : "var(--sn-text-sub)",
+              borderColor: "var(--sn-border)",
             }}
           >
             一般模式
@@ -202,9 +227,9 @@ export function HomePage() {
             onClick={() => setViewMode("quick")}
             style={{
               background:
-                viewMode === "quick" ? "linear-gradient(135deg, #D9512C 0%, #EB6A43 100%)" : "#F7E6DB",
-              color: viewMode === "quick" ? "#fff" : "#8E3C24",
-              borderColor: "#EFC6AE",
+                viewMode === "quick" ? "var(--sn-primary)" : "var(--sn-surface-soft)",
+              color: viewMode === "quick" ? "#fff" : "var(--sn-text-sub)",
+              borderColor: "var(--sn-border)",
             }}
           >
             快速查詢
@@ -212,17 +237,15 @@ export function HomePage() {
         </div>
       </Card>
 
-      {loading ? <Alert kind="info">載入可預約時段中...</Alert> : null}
-      {error ? <Alert kind="error">{error}</Alert> : null}
-      {!loading && !error && items.length === 0 ? (
-        <Alert kind="info">此週目前無可預約時段。</Alert>
-      ) : null}
+      {!loading && !error && items.length === 0 ? <Alert kind="info">此週目前無可預約時段。</Alert> : null}
 
       {!loading && !error && items.length > 0 && viewMode === "week" ? (
-        <div style={{ display: "grid", gap: 10 }}>
+        <div style={{ display: "grid", gap: 14 }}>
           {availableDates.map((date) => (
             <Card key={date}>
-              <h3 style={{ margin: 0 }}>{date} (週{weekdayLabel(date)})</h3>
+              <h3 className="section-title" style={{ margin: 0 }}>
+                {date} (週{weekdayLabel(date)})
+              </h3>
               {renderIntervals(grouped[date] ?? [])}
             </Card>
           ))}
@@ -231,7 +254,9 @@ export function HomePage() {
 
       {!loading && !error && items.length > 0 && viewMode === "quick" ? (
         <Card>
-          <h3 style={{ marginTop: 0 }}>可預約日期</h3>
+          <h3 className="section-title" style={{ marginTop: 0 }}>
+            可預約日期
+          </h3>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {availableDates.map((date) => (
               <button
@@ -239,16 +264,16 @@ export function HomePage() {
                 type="button"
                 onClick={() => setSelectedQuickDate(date)}
                 style={{
-                  border: "1px solid #EFC6AE",
-                  borderRadius: 999,
-                  padding: "6px 10px",
-                  background: selectedQuickDate === date ? "#D9512C" : "#FFF8F3",
-                  color: selectedQuickDate === date ? "#fff" : "#2E1A0E",
+                  border: "1px solid var(--sn-border)",
+                  borderRadius: 4,
+                  padding: "8px 12px",
+                  background: selectedQuickDate === date ? "var(--sn-hover)" : "var(--sn-surface)",
+                  color: selectedQuickDate === date ? "var(--sn-primary)" : "var(--sn-text-sub)",
                   cursor: "pointer",
                   boxShadow:
                     selectedQuickDate === date
-                      ? "0 8px 18px rgba(217, 81, 44, 0.24)"
-                      : "0 4px 14px rgba(217, 81, 44, 0.1)",
+                      ? "0 4px 10px rgba(47, 47, 47, 0.1)"
+                      : "none",
                 }}
               >
                 {date} (週{weekdayLabel(date)}) · {grouped[date]?.length ?? 0} slots
@@ -257,7 +282,7 @@ export function HomePage() {
           </div>
 
           {selectedQuickDate ? (
-            <div style={{ marginTop: 12 }}>
+            <div style={{ marginTop: 16 }}>
               <strong>{selectedQuickDate} (週{weekdayLabel(selectedQuickDate)})</strong>
               {renderIntervals(quickIntervals)}
             </div>
@@ -265,11 +290,8 @@ export function HomePage() {
         </Card>
       ) : null}
 
-      {bookingError ? <Alert kind="error">{bookingError}</Alert> : null}
-      {bookingLoading ? <Alert kind="info">建立預約中...</Alert> : null}
       {booking ? (
         <Card>
-          <Alert kind="success">預約成功，請保存 booking reference。</Alert>
           <BookingCard booking={booking} />
           <div style={{ marginTop: 10 }}>
             <Button type="button" onClick={() => void handleCopyReference()}>
@@ -309,13 +331,13 @@ export function HomePage() {
       >
         {confirmInterval ? (
           <div style={{ display: "grid", gap: 8 }}>
-            <p style={{ color: "#6A3B23" }}>請再次確認以下時段：</p>
+            <p style={{ color: "var(--sn-text)" }}>請再次確認以下時段：</p>
             <div
               style={{
-                border: "1px solid #F0CCB8",
+                border: "1px solid var(--sn-border)",
                 borderRadius: 12,
                 padding: "10px 12px",
-                background: "#FFF6F0",
+                background: "var(--sn-surface-soft)",
               }}
             >
               <strong>{confirmInterval.date}</strong>
@@ -325,6 +347,19 @@ export function HomePage() {
             </div>
           </div>
         ) : null}
+      </Modal>
+
+      <Modal
+        open={messagePopup !== null}
+        title={messagePopup?.title ?? ""}
+        onClose={() => setMessagePopup(null)}
+        footer={
+          <Button type="button" onClick={() => setMessagePopup(null)}>
+            確定
+          </Button>
+        }
+      >
+        {messagePopup ? <p style={{ lineHeight: 1.7 }}>{messagePopup.message}</p> : null}
       </Modal>
     </>
   );
