@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useCreateBooking } from "../features/booking/hooks";
 import { BookingCard } from "../features/booking/ui/BookingCard";
+import { getIntervals } from "../features/intervals/api";
 import { useIntervals } from "../features/intervals/hooks";
+import { toUserMessage } from "../shared/api/errors";
 import { Alert } from "../shared/ui/Alert";
 import { Button } from "../shared/ui/Button";
 import { Card } from "../shared/ui/Card";
@@ -66,7 +68,10 @@ export function HomePage() {
   const { booking, loading: bookingLoading, error: bookingError, submit } = useCreateBooking();
   const [viewMode, setViewMode] = useState<ViewMode>("week");
   const [weekIndex, setWeekIndex] = useState(0);
-  const [selectedQuickDate, setSelectedQuickDate] = useState<string | null>(null);
+  const [quickItemsData, setQuickItemsData] = useState<Interval[]>([]);
+  const [quickLoading, setQuickLoading] = useState(false);
+  const [quickError, setQuickError] = useState<string | null>(null);
+  const [quickPage, setQuickPage] = useState(1);
   const [confirmInterval, setConfirmInterval] = useState<Interval | null>(null);
   const [messagePopup, setMessagePopup] = useState<{ title: string; message: string } | null>(null);
 
@@ -74,27 +79,82 @@ export function HomePage() {
   const selectedWeek = weekOptions[weekIndex] ?? null;
   const grouped = useMemo(() => groupByDate(items), [items]);
   const availableDates = useMemo(() => Object.keys(grouped).sort(), [grouped]);
+  const quickPageSize = 10;
+  const quickItems = useMemo(
+    () =>
+      [...quickItemsData].sort((a, b) => {
+        const dateCompare = a.date.localeCompare(b.date);
+        if (dateCompare !== 0) {
+          return dateCompare;
+        }
+        return a.start_time.localeCompare(b.start_time);
+      }),
+    [quickItemsData]
+  );
+  const quickTotalPages = Math.max(1, Math.ceil(quickItems.length / quickPageSize));
+  const quickCurrentPage = Math.min(quickPage, quickTotalPages);
+  const quickPageItems = useMemo(() => {
+    const start = (quickCurrentPage - 1) * quickPageSize;
+    return quickItems.slice(start, start + quickPageSize);
+  }, [quickCurrentPage, quickItems]);
+
+  useEffect(() => {
+    if (viewMode !== "week" || !selectedWeek) {
+      return;
+    }
+    void fetchUserIntervals(selectedWeek.from, selectedWeek.to);
+  }, [fetchUserIntervals, selectedWeek, viewMode]);
+
+  const fetchQuickIntervals = async () => {
+    setQuickLoading(true);
+    setQuickError(null);
+    try {
+      const data = await getIntervals();
+      setQuickItemsData(data);
+    } catch (errorValue) {
+      setQuickError(toUserMessage(errorValue));
+      setQuickItemsData([]);
+    } finally {
+      setQuickLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (viewMode !== "quick") {
+      return;
+    }
+    void fetchQuickIntervals();
+  }, [viewMode]);
+
+  useEffect(() => {
+    if (quickCurrentPage > quickTotalPages) {
+      setQuickPage(quickTotalPages);
+    }
+  }, [quickCurrentPage, quickTotalPages]);
+
+  const intervalById = useMemo(() => {
+    const map = new Map<number, Interval>();
+    for (const interval of items) {
+      map.set(interval.id, interval);
+    }
+    for (const interval of quickItemsData) {
+      map.set(interval.id, interval);
+    }
+    return map;
+  }, [items, quickItemsData]);
 
   useEffect(() => {
     if (!selectedWeek) {
       return;
     }
-    void fetchUserIntervals(selectedWeek.from, selectedWeek.to);
-  }, [fetchUserIntervals, selectedWeek]);
-
-  useEffect(() => {
-    if (availableDates.length === 0) {
-      setSelectedQuickDate(null);
-      return;
-    }
-    setSelectedQuickDate((prev) => (prev && availableDates.includes(prev) ? prev : availableDates[0]));
-  }, [availableDates]);
+    setQuickPage(1);
+  }, [selectedWeek, viewMode]);
 
   const handleBook = async (intervalId: number) => {
     if (bookingLoading) {
       return;
     }
-    const interval = items.find((item) => item.id === intervalId);
+    const interval = intervalById.get(intervalId);
     if (!interval) {
       return;
     }
@@ -103,13 +163,18 @@ export function HomePage() {
 
   const canGoPrev = weekIndex > 0;
   const canGoNext = weekIndex < weekOptions.length - 1;
-  const quickIntervals = selectedQuickDate ? grouped[selectedQuickDate] ?? [] : [];
 
   useEffect(() => {
-    if (error) {
+    if (error && viewMode === "week") {
       setMessagePopup({ title: "系統提示", message: error });
     }
-  }, [error]);
+  }, [error, viewMode]);
+
+  useEffect(() => {
+    if (quickError && viewMode === "quick") {
+      setMessagePopup({ title: "系統提示", message: quickError });
+    }
+  }, [quickError, viewMode]);
 
   useEffect(() => {
     if (bookingError) {
@@ -130,7 +195,11 @@ export function HomePage() {
     const result = await submit(confirmInterval.id);
     setConfirmInterval(null);
     if (result.booking || result.errorCode === "INTERVAL_ALREADY_BOOKED") {
-      await fetchUserIntervals(selectedWeek.from, selectedWeek.to);
+      if (viewMode === "week") {
+        await fetchUserIntervals(selectedWeek.from, selectedWeek.to);
+      } else {
+        await fetchQuickIntervals();
+      }
     }
   };
 
@@ -184,62 +253,99 @@ export function HomePage() {
           請選擇後台開放的可預約時段。
         </p>
 
-        <div style={{ marginTop: 18, display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
-          <Button
-            type="button"
-            disabled={!canGoPrev}
-            onClick={() => setWeekIndex((prev) => Math.max(0, prev - 1))}
-          >
-            上一週
-          </Button>
-          <select
-            value={weekIndex}
-            onChange={(event) => setWeekIndex(Number(event.target.value))}
-            style={earthSelectStyle}
-          >
-            {weekOptions.map((week, index) => (
-              <option key={week.label} value={index}>
-                {week.label}
-              </option>
-            ))}
-          </select>
-          <Button
-            type="button"
-            disabled={!canGoNext}
-            onClick={() => setWeekIndex((prev) => Math.min(weekOptions.length - 1, prev + 1))}
-          >
-            下一週
-          </Button>
-          <Button
-            type="button"
-            onClick={() => setViewMode("week")}
+        <div style={{ marginTop: 18, display: "grid", gap: 12 }}>
+          <div
             style={{
-              background:
-                viewMode === "week" ? "var(--sn-primary)" : "var(--sn-surface-soft)",
-              color: viewMode === "week" ? "#fff" : "var(--sn-text-sub)",
-              borderColor: "var(--sn-border)",
+              border: "1px solid var(--sn-border)",
+              borderRadius: 8,
+              padding: 12,
+              background: "var(--sn-surface)",
             }}
           >
-            一般模式
-          </Button>
-          <Button
-            type="button"
-            onClick={() => setViewMode("quick")}
-            style={{
-              background:
-                viewMode === "quick" ? "var(--sn-primary)" : "var(--sn-surface-soft)",
-              color: viewMode === "quick" ? "#fff" : "var(--sn-text-sub)",
-              borderColor: "var(--sn-border)",
-            }}
-          >
-            快速查詢
-          </Button>
+            <p className="text-sub" style={{ marginBottom: 8 }}>
+              模式切換
+            </p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
+              <Button
+                type="button"
+                onClick={() => setViewMode("week")}
+                style={{
+                  background: viewMode === "week" ? "var(--sn-primary)" : "var(--sn-surface-soft)",
+                  color: viewMode === "week" ? "#fff" : "var(--sn-text-sub)",
+                  borderColor: "var(--sn-border)",
+                }}
+              >
+                一般模式
+              </Button>
+              <Button
+                type="button"
+                onClick={() => setViewMode("quick")}
+                style={{
+                  background: viewMode === "quick" ? "var(--sn-primary)" : "var(--sn-surface-soft)",
+                  color: viewMode === "quick" ? "#fff" : "var(--sn-text-sub)",
+                  borderColor: "var(--sn-border)",
+                }}
+              >
+                快速查詢
+              </Button>
+            </div>
+          </div>
+
+          {viewMode === "week" ? (
+            <div
+              style={{
+                border: "1px solid var(--sn-border)",
+                borderRadius: 8,
+                padding: 12,
+                background: "var(--sn-surface)",
+              }}
+            >
+              <>
+                <p className="text-sub" style={{ marginBottom: 8 }}>
+                  一般模式專屬
+                </p>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
+                  <Button
+                    type="button"
+                    disabled={!canGoPrev}
+                    onClick={() => setWeekIndex((prev) => Math.max(0, prev - 1))}
+                  >
+                    上一週
+                  </Button>
+                  <select
+                    value={weekIndex}
+                    onChange={(event) => setWeekIndex(Number(event.target.value))}
+                    style={earthSelectStyle}
+                  >
+                    {weekOptions.map((week, index) => (
+                      <option key={week.label} value={index}>
+                        {week.label}
+                      </option>
+                    ))}
+                  </select>
+                  <Button
+                    type="button"
+                    disabled={!canGoNext}
+                    onClick={() => setWeekIndex((prev) => Math.min(weekOptions.length - 1, prev + 1))}
+                  >
+                    下一週
+                  </Button>
+                </div>
+              </>
+            </div>
+          ) : null}
         </div>
       </Card>
 
-      {!loading && !error && items.length === 0 ? <Alert kind="info">此週目前無可預約時段。</Alert> : null}
+      {viewMode === "week" && !loading && !error && items.length === 0 ? (
+        <Alert kind="info">此週目前無可預約時段。</Alert>
+      ) : null}
+      {viewMode === "quick" && !quickLoading && !quickError && quickItems.length === 0 ? (
+        <Alert kind="info">目前沒有可預約時段。</Alert>
+      ) : null}
+      {viewMode === "quick" && quickLoading ? <Alert kind="info">載入可預約時段中...</Alert> : null}
 
-      {!loading && !error && items.length > 0 && viewMode === "week" ? (
+      {viewMode === "week" && !loading && !error && items.length > 0 ? (
         <div style={{ display: "grid", gap: 14 }}>
           {availableDates.map((date) => (
             <Card key={date}>
@@ -251,42 +357,36 @@ export function HomePage() {
           ))}
         </div>
       ) : null}
-
-      {!loading && !error && items.length > 0 && viewMode === "quick" ? (
+      {viewMode === "quick" && !quickLoading && !quickError && quickItems.length > 0 ? (
         <Card>
-          <h3 className="section-title" style={{ marginTop: 0 }}>
-            可預約日期
+          <h3 className="section-title" style={{ marginTop: 0, marginBottom: 8 }}>
+            可預約時段
           </h3>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {availableDates.map((date) => (
-              <button
-                key={date}
-                type="button"
-                onClick={() => setSelectedQuickDate(date)}
-                style={{
-                  border: "1px solid var(--sn-border)",
-                  borderRadius: 4,
-                  padding: "8px 12px",
-                  background: selectedQuickDate === date ? "var(--sn-hover)" : "var(--sn-surface)",
-                  color: selectedQuickDate === date ? "var(--sn-primary)" : "var(--sn-text-sub)",
-                  cursor: "pointer",
-                  boxShadow:
-                    selectedQuickDate === date
-                      ? "0 4px 10px rgba(47, 47, 47, 0.1)"
-                      : "none",
-                }}
-              >
-                {date} (週{weekdayLabel(date)}) · {grouped[date]?.length ?? 0} slots
-              </button>
-            ))}
+          <p className="text-sub">
+            共 {quickItems.length} 筆，頁面 {quickCurrentPage} / {quickTotalPages}
+          </p>
+          {renderIntervals(quickPageItems)}
+          <div style={{ marginTop: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={quickCurrentPage <= 1}
+              onClick={() => setQuickPage((prev) => Math.max(1, prev - 1))}
+            >
+              上一頁
+            </Button>
+            <span className="text-sub">
+              第 {quickCurrentPage} 頁 / 共 {quickTotalPages} 頁
+            </span>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={quickCurrentPage >= quickTotalPages}
+              onClick={() => setQuickPage((prev) => Math.min(quickTotalPages, prev + 1))}
+            >
+              下一頁
+            </Button>
           </div>
-
-          {selectedQuickDate ? (
-            <div style={{ marginTop: 16 }}>
-              <strong>{selectedQuickDate} (週{weekdayLabel(selectedQuickDate)})</strong>
-              {renderIntervals(quickIntervals)}
-            </div>
-          ) : null}
         </Card>
       ) : null}
 
