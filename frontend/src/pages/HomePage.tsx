@@ -79,7 +79,10 @@ export function HomePage() {
   const [quickError, setQuickError] = useState<string | null>(null);
   const [quickPage, setQuickPage] = useState(1);
   const [confirmInterval, setConfirmInterval] = useState<Interval | null>(null);
-  const [messagePopup, setMessagePopup] = useState<{ title: string; message: string } | null>(null);
+  const [messagePopup, setMessagePopup] = useState<
+    { title: string; message: string; bookingReference?: string } | null
+  >(null);
+  const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
 
   const weekOptions = useMemo(() => buildWeekOptions(startOfDay(new Date())), []);
   const selectedWeek = weekOptions[weekIndex] ?? null;
@@ -193,6 +196,7 @@ export function HomePage() {
       setMessagePopup({
         title: t("home_booking_success_title"),
         message: t("home_booking_success_message"),
+        bookingReference: booking.booking_reference,
       });
     }
   }, [booking, t]);
@@ -245,6 +249,21 @@ export function HomePage() {
     }
     try {
       await navigator.clipboard.writeText(booking.booking_reference);
+      setCopyFeedback(t("home_copy_success"));
+      setTimeout(() => setCopyFeedback(null), 2000);
+    } catch {
+      // Ignore clipboard write failures.
+    }
+  };
+
+  const handleCopyPopupReference = async () => {
+    if (!messagePopup?.bookingReference) {
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(messagePopup.bookingReference);
+      setCopyFeedback(t("home_copy_success"));
+      setTimeout(() => setCopyFeedback(null), 2000);
     } catch {
       // Ignore clipboard write failures.
     }
@@ -401,10 +420,11 @@ export function HomePage() {
       {booking ? (
         <Card>
           <BookingCard booking={booking} />
-          <div style={{ marginTop: 10 }}>
+          <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 8 }}>
             <Button type="button" onClick={() => void handleCopyReference()}>
               {t("home_copy_reference")}
             </Button>
+            {copyFeedback ? <span className="text-sub">{copyFeedback}</span> : null}
           </div>
         </Card>
       ) : null}
@@ -462,12 +482,36 @@ export function HomePage() {
         title={messagePopup?.title ?? ""}
         onClose={() => setMessagePopup(null)}
         footer={
-          <Button type="button" onClick={() => setMessagePopup(null)}>
-            {t("common_confirm")}
-          </Button>
+          <>
+            {messagePopup?.bookingReference ? (
+              <Button type="button" variant="ghost" onClick={() => void handleCopyPopupReference()}>
+                {t("home_copy_reference")}
+              </Button>
+            ) : null}
+            <Button type="button" onClick={() => setMessagePopup(null)}>
+              {t("common_confirm")}
+            </Button>
+          </>
         }
       >
-        {messagePopup ? <p style={{ lineHeight: 1.7 }}>{messagePopup.message}</p> : null}
+        {messagePopup ? (
+          <div style={{ display: "grid", gap: 10 }}>
+            <p style={{ lineHeight: 1.7 }}>{messagePopup.message}</p>
+            {messagePopup.bookingReference ? (
+              <div
+                style={{
+                  border: "1px solid var(--sn-border)",
+                  borderRadius: 8,
+                  padding: "8px 10px",
+                  background: "var(--sn-surface-soft)",
+                }}
+              >
+                <strong>{t("booking_card_reference")}:</strong> {messagePopup.bookingReference}
+              </div>
+            ) : null}
+            {copyFeedback ? <span className="text-sub">{copyFeedback}</span> : null}
+          </div>
+        ) : null}
       </Modal>
     </>
   );
