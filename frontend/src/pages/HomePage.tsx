@@ -54,14 +54,16 @@ function groupByDate(intervals: Interval[]): Record<string, Interval[]> {
   }, {});
 }
 
-const earthSelectStyle = {
-  padding: "8px 12px",
-  borderRadius: 12,
-  border: "1px solid var(--sn-border)",
-  minWidth: 220,
-  background: "var(--sn-surface)",
-  color: "var(--sn-text)",
-};
+function weekSummaryLabel(week: WeekOption | null): string {
+  if (!week) {
+    return "-";
+  }
+  const start = parseDateInput(week.from);
+  const end = parseDateInput(week.to);
+  const startLabel = start.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+  const endLabel = end.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return `${startLabel} — ${endLabel}`;
+}
 
 export function HomePage() {
   const { items, loading, error, fetchUserIntervals } = useIntervals();
@@ -204,16 +206,12 @@ export function HomePage() {
   };
 
   const renderIntervals = (intervals: Interval[]) => (
-    <div style={{ display: "grid", gap: 12, marginTop: 14 }}>
+    <div className="slot-grid" style={{ marginTop: 14 }}>
       {intervals.map((interval) => (
         <div
           key={interval.id}
-          className="slot-card"
+          className="slot-card slot-row"
           style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 16,
             padding: 16,
             animation: "sn-fade-in 0.24s ease",
           }}
@@ -253,8 +251,9 @@ export function HomePage() {
           請選擇後台開放的可預約時段。
         </p>
 
-        <div style={{ marginTop: 18, display: "grid", gap: 12 }}>
+        <div className="mode-sections" style={{ marginTop: 18 }}>
           <div
+            className="mode-section-card"
             style={{
               border: "1px solid var(--sn-border)",
               borderRadius: 8,
@@ -265,7 +264,7 @@ export function HomePage() {
             <p className="text-sub" style={{ marginBottom: 8 }}>
               模式切換
             </p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
+            <div className="mode-switch-row">
               <Button
                 type="button"
                 onClick={() => setViewMode("week")}
@@ -293,42 +292,40 @@ export function HomePage() {
 
           {viewMode === "week" ? (
             <div
+              className="mode-section-card"
               style={{
                 border: "1px solid var(--sn-border)",
                 borderRadius: 8,
-                padding: 12,
+                padding: 16,
                 background: "var(--sn-surface)",
+                boxShadow: "var(--sn-shadow-soft)",
               }}
             >
               <>
-                <p className="text-sub" style={{ marginBottom: 8 }}>
+                <p className="text-sub" style={{ marginBottom: 12 }}>
                   一般模式專屬
                 </p>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
+                <div className="week-nav-row">
                   <Button
                     type="button"
                     disabled={!canGoPrev}
                     onClick={() => setWeekIndex((prev) => Math.max(0, prev - 1))}
+                    style={{ minWidth: 44, padding: "8px 10px" }}
                   >
-                    上一週
+                    ←
                   </Button>
-                  <select
-                    value={weekIndex}
-                    onChange={(event) => setWeekIndex(Number(event.target.value))}
-                    style={earthSelectStyle}
-                  >
-                    {weekOptions.map((week, index) => (
-                      <option key={week.label} value={index}>
-                        {week.label}
-                      </option>
-                    ))}
-                  </select>
+                  <div style={{ flex: 1, textAlign: "center" }}>
+                    <div className="week-range-title" style={{ fontWeight: 600, lineHeight: 1.25, color: "var(--sn-text)" }}>
+                      {weekSummaryLabel(selectedWeek)}
+                    </div>
+                  </div>
                   <Button
                     type="button"
                     disabled={!canGoNext}
                     onClick={() => setWeekIndex((prev) => Math.min(weekOptions.length - 1, prev + 1))}
+                    style={{ minWidth: 44, padding: "8px 10px" }}
                   >
-                    下一週
+                    →
                   </Button>
                 </div>
               </>
@@ -366,7 +363,7 @@ export function HomePage() {
             共 {quickItems.length} 筆，頁面 {quickCurrentPage} / {quickTotalPages}
           </p>
           {renderIntervals(quickPageItems)}
-          <div style={{ marginTop: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div className="quick-pagination" style={{ marginTop: 16 }}>
             <Button
               type="button"
               variant="ghost"
