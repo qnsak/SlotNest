@@ -87,7 +87,33 @@ Rules:
 - for DB tests: migrate schema first, never rely on auto-create
 - naming should map to acceptance criteria where possible
 
-## 7. Git Workflow
+## 7. Frontend UI Conventions
+
+Header/navigation rules (implemented in `frontend/src/app/layout/UserLayout.tsx` and `frontend/src/index.css`):
+
+- Brand is the strongest hierarchy element:
+  - primary text: `SlotNest`
+  - secondary text: `預約` / `Booking`
+- Primary navigation contains only core routes (`首頁`, `預約查詢`).
+- Language switcher is a compact utility control on the right; do not render standalone "語言" text in header layout.
+- Active route state is driven by `NavLink` (`is-active` class).
+- Keep hover and active styles subtle; avoid heavy decorative effects.
+- Keep keyboard accessibility with `:focus-visible` styles for nav links and language selector.
+
+Header sizing/layout:
+
+- Desktop header height: `64px`; mobile: `60px`.
+- Shared container width token: `--sn-container-max` for both header and main content.
+- Header is sticky (`position: sticky; top: 0`) to keep navigation available during scroll.
+
+Validation for frontend changes:
+
+```bash
+make frontend-lint
+make frontend-build
+```
+
+## 8. Git Workflow
 
 Recommended branches:
 
@@ -99,8 +125,9 @@ Recommended commit style:
 
 - small, reversible commits
 - run `make backend-lint backend-test` before each commit
+- for frontend-only UI work, run `make frontend-lint frontend-build`
 
-## 8. Troubleshooting
+## 9. Troubleshooting
 
 ### Migration errors on startup
 

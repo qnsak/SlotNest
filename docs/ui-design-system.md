@@ -26,6 +26,7 @@ Defined in `frontend/src/index.css`.
 - `--sn-text-sub: #7B7773`
 - `--sn-hover: #FFF8F4`
 - `--sn-surface-soft: #F3EEE8`
+- `--sn-container-max: 980px`
 
 ## Typography
 - Base font: `Manrope`, fallback to `Noto Sans TC` and system Chinese fonts.
@@ -49,12 +50,26 @@ Defined in `frontend/src/index.css`.
 ## Header Pattern
 Implemented in:
 - `frontend/src/app/layout/UserLayout.tsx`
-- `frontend/src/app/layout/AdminLayout.tsx`
+- `frontend/src/shared/i18n/LanguageSwitcher.tsx`
 
 Current rules:
-- Height: `64px`
-- Background: `var(--sn-surface)`
+- Height: `64px` (`60px` on small screens)
+- Sticky: `position: sticky; top: 0; z-index: 20`
+- Background: `var(--sn-surface)` with subtle tint and blur
 - Bottom border: `1px solid var(--sn-border)`
+- User header content width aligns with main content (`--sn-container-max`)
+
+Information hierarchy:
+- Brand uses two-level typography:
+  - `.sn-brand-main`: `SlotNest`
+  - `.sn-brand-sub`: `預約` / `Booking`
+- Main nav uses `.sn-nav-link` with subtle hover and active states.
+- Language switcher is a compact utility select (`.sn-lang-select`) without standalone label text.
+
+Navigation interaction states:
+- Hover: neutral soft background (`--sn-surface-soft`)
+- Active: soft accent background (`--sn-primary-soft`)
+- Keyboard: explicit `:focus-visible` ring for links and language control
 
 ## Component Rules
 Implemented in `frontend/src/index.css` and shared UI components.
@@ -80,8 +95,7 @@ Implemented in `frontend/src/index.css` and shared UI components.
   - Error: `--sn-error-*`
   - Info: `--sn-info-*`
   - Success: `--sn-success-*`
-- Home page keeps a fixed feedback area below toolbar to reduce layout shift:
-  - `min-height: 48px`
+- Booking/copy feedback is shown via modal and inline alerts where appropriate.
 
 ## Booking Page Interaction Notes
 Implemented in `frontend/src/pages/HomePage.tsx`.
